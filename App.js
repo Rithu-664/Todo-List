@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Alert, FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, LogBox, Modal, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import colors from './Colors';
 import {AntDesign} from '@expo/vector-icons'
 import TodoList from './components/TodoList';
@@ -8,6 +8,7 @@ import Fire from './Fire'
 import OnboardingScreen from './screens/Onboarding';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+var firebase
 export default class App extends React.Component {
   state = {
     addTodoModalVisible: false,
@@ -18,6 +19,7 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
+      LogBox.ignoreLogs(['Setting a timer'])
     firebase = new Fire((error, user) => {
         if(error) {
             return Alert.alert('Oops!','Something went wrong. Please try again later')
@@ -73,6 +75,7 @@ export default class App extends React.Component {
 
   render(){
       if(this.state.loading){
+          <StatusBar hidden/>
           return(
               <View style={styles.container}>
                   <ActivityIndicator size="large" color={colors.blue} />
@@ -81,6 +84,7 @@ export default class App extends React.Component {
       }
     return (
       <View style={styles.container}>
+          <StatusBar hidden/>
           <Modal visible={this.state.isFirstLaunch} animationType="slide">
             <OnboardingScreen closeModal={() => this.setState({isFirstLaunch: false})} />
           </Modal>
