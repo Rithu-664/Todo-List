@@ -2,64 +2,94 @@ import React, { Component } from 'react'
 import { StyleSheet, Text, View, KeyboardAvoidingView, TouchableOpacity, TextInput, Alert } from 'react-native'
 import {AntDesign} from '@expo/vector-icons'
 import colors from '../Colors'
-import tempData from '../tempData'
 
 
 export default class AddListModal extends Component {
+  backgroundColors = [
+    "#5CD859",
+    "#24A6D9",
+    "#595BD9",
+    "#8022D9",
+    "#D159D8",
+    "#D85963",
+    "#D88559",
+  ];
 
-    backgroundColors = ["#345995","#E5DB9C","#E40066","#03CEA4","#FB4D3D","#C64191","#7A93AC"]
+  state = {
+    name: "",
+    color: this.backgroundColors[0],
+  };
 
-    state = {
-        name: '',
-        color: this.backgroundColors[0]
+  createTodo = () => {
+    const { name, color } = this.state;
+
+    if (name === "") {
+      Alert.alert(
+        "Error creating Todo List",
+        "Please enter a name for your todo list"
+      );
+    } else {
+      const list = { name, color };
+      this.props.addList(list);
+      this.setState({ name: "" });
+      this.props.closeModal();
     }
+  };
 
-    createTodo = () => {
-        const {name, color} = this.state;
-        
-        if(name === ''){
-            Alert.alert('Error creating Todo List','Please enter a name for your todo list')
-        }else{
-            tempData.push({
-                name,
-                color,
-                todos:[]
-            })
-            this.setState({name: ''})
-            this.props.closeModal()
-        }
-        
-    }
+  renderColors = () => {
+    return this.backgroundColors.map((color) => {
+      return (
+        <TouchableOpacity
+          key={color}
+          style={[styles.colorSelect, { backgroundColor: color }]}
+          onPress={() => this.setState({ color: color })}
+        />
+      );
+    });
+  };
 
-    renderColors = () => {
-        return this.backgroundColors.map(color => {
-            return(
-                <TouchableOpacity key={color} style={[styles.colorSelect, {backgroundColor: color}]} onPress={() => this.setState({color: color})} />
-            )
-        })
-    }
+  render() {
+    return (
+      <KeyboardAvoidingView style={styles.container} behavior="padding">
+        <TouchableOpacity
+          style={{ position: "absolute", top: 64, right: 32 }}
+          onPress={this.props.closeModal}
+        >
+          <AntDesign name="close" size={24} color={colors.black} />
+        </TouchableOpacity>
 
-    render() {
-        return (
-            <KeyboardAvoidingView style={styles.container} behavior="padding">
-                <TouchableOpacity style={{position:'absolute',top: 64, right: 32}} onPress={this.props.closeModal} >
-                    <AntDesign name="close" size={24} color={colors.black} />
-                </TouchableOpacity>
+        <View style={{ alignSelf: "stretch", marginHorizontal: 32 }}>
+          <Text style={styles.title}>Create Todo List</Text>
 
-                <View style={{alignSelf: 'stretch',marginHorizontal: 32}}>
-                    <Text style={styles.title}>Create Todo List</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter a name for your new Todo List 📄"
+            value={this.state.name}
+            onChangeText={(name) => this.setState({ name })}
+          />
 
-                    <TextInput style={styles.input} placeholder="Enter a name for your new Todo List 📄" value={this.state.name} onChangeText={name => this.setState({name})} />
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              marginTop: 12,
+            }}
+          >
+            {this.renderColors()}
+          </View>
 
-                    <View style={{flexDirection:'row',justifyContent:'space-between',marginTop: 12}} >{this.renderColors()}</View>
-
-                    <TouchableOpacity style={[styles.create,{backgroundColor: this.state.color}]} onPress={() => this.createTodo()}>
-                        <Text  style={{color:colors.white,fontWeight:'600',}}>Create!</Text>
-                    </TouchableOpacity>
-                </View>
-            </KeyboardAvoidingView>
-        )
-    }
+          <TouchableOpacity
+            style={[styles.create, { backgroundColor: this.state.color }]}
+            onPress={() => this.createTodo()}
+          >
+            <Text style={{ color: colors.white, fontWeight: "600" }}>
+              Create!
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    );
+  }
 }
 
 const styles = StyleSheet.create({

@@ -1,14 +1,38 @@
 import React from 'react';
-import { FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import colors from './Colors';
 import {AntDesign} from '@expo/vector-icons'
-import tempData from './tempData';
 import TodoList from './components/TodoList';
 import AddListModal from './components/AddListModal';
+import Fire from './Fire'
 
 export default class App extends React.Component {
   state = {
-    addTodoModalVisible: false
+    addTodoModalVisible: false,
+    lists: [],
+    user: {},
+    loading: true
+  }
+
+  componentDidMount() {
+    firebase = new Fire((error, user) => {
+        if(error) {
+            return Alert.alert('Oops!','Something went wrong. Please try again later')
+        }
+
+        firebase.getLists(lists => {
+            this.setState({lists, user},() => {
+                this.setState({loading: false})
+            })
+        })
+
+        this.setState({user})
+    })
+
+  }
+
+  componentWillUnmount() {
+    firebase.detach()
   }
 
   toggleAddTodoModal() {
@@ -16,14 +40,37 @@ export default class App extends React.Component {
   }
 
   renderList = list => {
-    return <TodoList list={list} />
+    return <TodoList list={list}  updateList={this.updateList} deleteList={this.deleteList} />
+  }
+
+  addList = list => {
+    firebase.addList({
+        name: list.name,
+        color: list.color,
+        todos: [],
+    })
+  }
+
+  updateList = list => {
+    firebase.updateList(list)
+  }
+
+  deleteList = list => {
+      firebase.deleteLists(list)
   }
 
   render(){
+      if(this.state.loading){
+          return(
+              <View style={styles.container}>
+                  <ActivityIndicator size="large" color={colors.blue} />
+              </View>
+          )
+      }
     return (
       <View style={styles.container}>
         <Modal animationType="slide" visible={this.state.addTodoModalVisible} onRequestClose={() => this.toggleAddTodoModal()} >
-          <AddListModal closeModal = {() => this.toggleAddTodoModal()} />
+          <AddListModal closeModal = {() => this.toggleAddTodoModal()} addList={this.addList} />
         </Modal>
         <View style={{flexDirection:'row'}}>
           <View style={styles.divider} />
@@ -42,10 +89,11 @@ export default class App extends React.Component {
 
       <View style={{height: 275,paddingLeft:32}}>
             <FlatList
-              data={tempData}
+              data={this.state.lists}
               horizontal
               showsHorizontalScrollIndicator={false}
-              keyExtractor={(item) => item.name}
+              keyExtractor={(item) => item.id.toString()}
+              keyboardShouldPersistTaps="always"
               renderItem={({item}) => this.renderList(item)}
             />
       </View>

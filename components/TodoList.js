@@ -1,11 +1,11 @@
 import React from 'react'
-import {Modal, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
+import {Alert, Modal, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
 import colors from '../Colors'
 import TodoModal from './TodoModal'
 
 export default class TodoList extends React.Component{
     state = {
-        showListVisible: true
+        showListVisible: false
     }
 
     toggleListModal() {
@@ -13,15 +13,30 @@ export default class TodoList extends React.Component{
     }
 
     render(){
-        const list = this.props.list
-        const completedCount = list.todos.filter(todo => todo.completed).length;
+        const list = this.props.list;
+        const completedCount = list.todos.filter(
+          (todo) => todo.completed
+        ).length;
         const remainingCount = list.todos.length - completedCount
         return(
             <View>
                 <Modal visible={this.state.showListVisible} animationType="slide" onRequestClose={() =>this.toggleListModal()}>
-                    <TodoModal list={list} closeModal={() => this.toggleListModal()} />
+                    <TodoModal list={list} closeModal={() => this.toggleListModal()} updateList={this.props.updateList} />
                 </Modal>
-                <TouchableOpacity style={[styles.listContainer, {backgroundColor: list.color}]} onPress={() => this.toggleListModal()}>
+                <TouchableOpacity style={[styles.listContainer, {backgroundColor: list.color}]} onPress={() => this.toggleListModal()}  onLongPress={() => Alert.alert(
+                    'Delete a list',
+                    'Are you sure you want to delete this list?',
+                    [
+                        {
+                            text: 'Cancel',
+                            style: 'cancel'
+                        },
+                        {
+                            text:'Delete',
+                            style: 'destructive',
+                            onPress: () => this.props.deleteList(list)
+                        }
+                    ])}>
                     <Text style={styles.listTitle} numberOfLines={1}>
                         {list.name}
                     </Text>
