@@ -5,13 +5,16 @@ import {AntDesign} from '@expo/vector-icons'
 import TodoList from './components/TodoList';
 import AddListModal from './components/AddListModal';
 import Fire from './Fire'
+import OnboardingScreen from './screens/Onboarding';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default class App extends React.Component {
   state = {
     addTodoModalVisible: false,
     lists: [],
     user: {},
-    loading: true
+    loading: true,
+    isFirstLaunch: null
   }
 
   componentDidMount() {
@@ -28,6 +31,15 @@ export default class App extends React.Component {
 
         this.setState({user})
     })
+
+    AsyncStorage.getItem('alreadyLaunched').then(value => {
+        if (value === null) {
+          AsyncStorage.setItem('alreadyLaunched', 'true')
+          this.setState({isFirstLaunch: true})
+        }else {
+          this.setState({isFirstLaunch: false})
+        }
+      })
 
   }
 
@@ -69,6 +81,9 @@ export default class App extends React.Component {
       }
     return (
       <View style={styles.container}>
+          <Modal visible={this.state.isFirstLaunch} animationType="slide">
+            <OnboardingScreen closeModal={() => this.setState({isFirstLaunch: false})} />
+          </Modal>
         <Modal animationType="slide" visible={this.state.addTodoModalVisible} onRequestClose={() => this.toggleAddTodoModal()} >
           <AddListModal closeModal = {() => this.toggleAddTodoModal()} addList={this.addList} />
         </Modal>
